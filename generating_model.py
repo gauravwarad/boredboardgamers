@@ -18,7 +18,6 @@ bggreviewsSchema = StructType([
     StructField("ID", IntegerType(), True),
     StructField("name", StringType(), True),
     StructField("userId", IntegerType(), True)
-
 ])
 
 #bggreviewsDF = spark.read.csv("dataset/bgg-15m-reviews.csv", schema=bggreviewsSchema, header=True)
@@ -34,17 +33,18 @@ newDF = bggreviewsDF
 # .limit(10)
 
 # print("newDF")
-# newDF.show()
+newDF.show()
+
+# newDF.na.drop(subset=["ID","name","rating"])
+
+# stringindexer = (StringIndexer()
+#                     .setInputCol("name")
+#                     .setOutputCol("userNumber"))
+# indexedDF = stringindexer.fit(newDF)
 
 
+# newDF = indexedDF.transform(newDF)
 
-newDF.na.drop(subset=["ID","name","rating"])
-
-stringindexer = (StringIndexer()
-                    .setInputCol("name")
-                    .setOutputCol("userId"))
-indexedDF = stringindexer.fit(newDF)
-newDF = indexedDF.transform(newDF)
 #df.orderBy(col('userName').asc()).limit(10).show()
 
 #bggreviewsDF.groupBy("userID").count().orderBy(col('count').desc()).show(10)
@@ -56,7 +56,7 @@ newDF = indexedDF.transform(newDF)
 #                                     rating=float(p[2]), timestamp=int(p[3])))
 # ratings = spark.createDataFrame(ratingsRDD)
 (training, test) = newDF.randomSplit([0.8, 0.2])
-training.show(), test.show()
+# training.show(), test.show()
 
 # Build the recommendation model using ALS on the training data
 # Note we set cold start strategy to 'drop' to ensure we don't get NaN evaluation metrics
@@ -68,13 +68,13 @@ model = als.fit(training)
 
 #
 # # Evaluate the model by computing the RMSE on the test data
-predictions = model.transform(test)
-evaluator = RegressionEvaluator(metricName="rmse", labelCol="rating",
-                                 predictionCol="prediction")
+# predictions = model.transform(test)
+# evaluator = RegressionEvaluator(metricName="rmse", labelCol="rating",
+#                                  predictionCol="prediction")
 
 # predictions.show(20)
-rmse = evaluator.evaluate(predictions)
-print("Root-mean-square error = " + str(rmse))
+# rmse = evaluator.evaluate(predictions)
+# print("Root-mean-square error = " + str(rmse))
 
 # predictions = model.transform(predictUser)
 # predictions.show(30)
@@ -92,7 +92,7 @@ print("Root-mean-square error = " + str(rmse))
 # movieSubSetRecs = model.recommendForItemSubset(movies, 10)
 
 
-model_path = "C:\\Users\\gauravw\\Documents\\projects\\531_project\\brandon\\demo2_singleuser_recs\\models"
+model_path = "C:\\Users\\gauravw\\Documents\\projects\\531_project\\models"
 
 # model.save(model_path)
 model.write().overwrite().save(model_path)
