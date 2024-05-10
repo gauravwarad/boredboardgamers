@@ -2,7 +2,7 @@ import json
 
 from flask import Flask, render_template, request
 
-from user_predictions import UserPredictions, get_users
+from user_predictions import UserPredictions, get_users, search_users
 
 # from ui_data_scripts import get_users_list, recommended_games
 
@@ -16,17 +16,22 @@ app = Flask(__name__)
 def index(per_page=10, page=1):
     # Example parameters
     # users = [{"userid": 1, "username": "gaurav"},
-    #          {"userid": 2, "username": "brandon"},
-    #          {"userid": 3, "username": "sonal"}]
+    #          {"userid": 2, "username": "brandon"}]
     # users = get_users_list()
     # Pass parameters to the index.html template
     args = request.args
     per_page = args.get("per_page", default=10)
     page = args.get("page", default=1)
+    search_key = args.get("search_key", default=None)
+
+    users = []
+    if search_key:
+        users = search_users(search_key)
     
     # per_page = 50
     # page = 3
-    users = get_users(int(per_page), int(page))
+    else:
+        users = get_users(int(per_page), int(page))
     # print(users)
     # users = [
     #     "{\"userId\":\"100\",\"userName\":\"jgoyes\"}",
