@@ -39,8 +39,16 @@
 <div class="container">
   <h2>User Selection</h2>
 
+
+<div class="search-box">
+    <input type="text" id="fullSearchInput" placeholder="search in entire database...">
+  </div>
+
+    <button class="submit-button" onclick="fullSearch()">Full Search</button>
+  <br>
+  <br>
   <div class="search-box">
-    <input type="text" id="searchInput" onkeyup="searchUser()" placeholder="Search for users...">
+    <input type="text" id="searchInput" onkeyup="searchUser()" placeholder="Search in the list...">
   </div>
 
   <ul class="user-list" id="userList">
@@ -104,6 +112,21 @@ function submitPage() {
   } else {
     alert("Please select a user before proceeding.");
   }
+}
+
+  function fullSearch() {
+  var searchQuery = document.getElementById("fullSearchInput").value.trim();
+  // Check if a user is selected
+  if (searchQuery === "") {
+        alert("Please enter a search query.");
+        return;
+    }
+  const url = '/users?search_key=' + searchQuery;
+
+
+  window.location.href = url;
+
+
 }
 
 </script>

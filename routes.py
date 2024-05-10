@@ -14,12 +14,14 @@ app = Flask(__name__)
 @app.route('/', methods=['GET'])
 @app.route('/users', methods=['GET'])
 def index(per_page=10, page=1):
+
     # Example parameters
     # users = [{"userid": 1, "username": "gaurav"},
     #          {"userid": 2, "username": "brandon"}]
     # users = get_users_list()
     # Pass parameters to the index.html template
     args = request.args
+    print("users api called with arguments - ", args)
     per_page = args.get("per_page", default=10)
     page = args.get("page", default=1)
     search_key = args.get("search_key", default=None)
