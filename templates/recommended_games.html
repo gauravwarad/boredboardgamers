@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Data</title>
+    <style>
+        /* CSS Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 15px auto;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .game-card {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .game-title {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .game-info {
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Recommended Games</h1>
+        <b> for {{ user }}</b>
+        <div id="game-list"></div>
+    </div>
+
+    <script>
+        // JavaScript
+        document.addEventListener("DOMContentLoaded", function() {
+            var jsonData = {{ json_data | tojson }};
+
+            var gameList = document.getElementById("game-list");
+
+            jsonData.forEach(function(game) {
+                var gameData = JSON.parse(game);
+                var gameCard = document.createElement("div");
+                gameCard.classList.add("game-card");
+
+                var gameTitle = document.createElement("div");
+                gameTitle.classList.add("game-title");
+                gameTitle.textContent = gameData.gameName;
+                gameCard.appendChild(gameTitle);
+
+                var gameInfo = document.createElement("div");
+                gameInfo.classList.add("game-info");
+                gameInfo.innerHTML = "<strong>Reviews:</strong> " + gameData.cnt_reviews + "<br>" +
+                                     "<strong>Average Rating:</strong> " + gameData.avg_rating.toFixed(2) + "<br>" +
+                                     "<strong>Prediction:</strong> " + gameData.prediction.toFixed(2);
+                gameCard.appendChild(gameInfo);
+
+                gameList.appendChild(gameCard);
+            });
+        });
+    </script>
+</body>
+</html>

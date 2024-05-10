@@ -1,5 +1,7 @@
 import time
 
+from pyspark.sql.functions import monotonically_increasing_id
+
 start_time = time.time()
 
 # from pyspark import SparkContext, SparkConf
@@ -25,7 +27,7 @@ spark = SparkSession.builder.appName("gauravchaapp").getOrCreate()
 # print("app ended")
 
 bggreviewsSchema = StructType([
-    StructField("number", IntegerType(), True),
+    StructField("rownum", IntegerType(), True),
     StructField("user", StringType(), True),
     StructField("rating", FloatType(), True),
     StructField("comment", StringType(), True),
@@ -33,9 +35,9 @@ bggreviewsSchema = StructType([
     StructField("name", StringType(), True)
 ])
 
-bggreviewsDF = spark.read.csv("dataset/bgg-19m-reviews.csv", schema=bggreviewsSchema, header=True)
+# bggreviewsDF = spark.read.csv("dataset/bgg-19m-reviews.csv", schema=bggreviewsSchema, header=True)
 
-bggreviewsDF.show(10)
+# bggreviewsDF.show(10)
     # prints the line
 
 
@@ -55,7 +57,35 @@ bggreviewsDF.show(10)
 
 
 
+# getting unique usernames
+# unique_users = bggreviewsDF.select("user").distinct()
+# unique_games = bggreviewsDF.select("ID").distinct()
 
+# unique_users.show()
+# print(unique_users.count())
+
+# unique_games.show(20)
+# print(unique_games.count())
+
+
+
+bggreviewsDF = spark.read.csv("dataset/minidataset.csv", schema=bggreviewsSchema, header=True)
+
+
+print(bggreviewsDF.count())
+# getting unique usernames
+# unique_users = bggreviewsDF.select("user").distinct()
+# unique_users.show()
+
+with_user_id = bggreviewsDF.withColumn("userid", monotonically_increasing_id())
+
+with_user_id.show()
+with_user_id.write.csv("dataset/complete")
+trimmed_df = with_user_id.select("userid", "ID", "rating")
+
+trimmed_df.show()
+
+trimmed_df.write.csv("dataset/trimmed_mini_dataset2")
 
 
 end_time = time.time()

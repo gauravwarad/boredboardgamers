@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Selection</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .user-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    .user-list li {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+    .user-list li:hover {
+      background-color: #f0f0f0;
+      cursor: pointer;
+    }
+
+    .search-box {
+      margin-bottom: 10px;
+    }
+    .submit-button {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>User Selection</h2>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" onkeyup="searchUser()" placeholder="Search for users...">
+  </div>
+
+  <ul class="user-list" id="userList">
+    {% for user in users %}
+    <li onclick="selectUser('{{ user.userName }}', '{{ user.userId }}')">{{ user.userName }}</li>
+    {% endfor %}
+  </ul>
+
+  <button class="submit-button" onclick="submitPage()">Submit</button>
+</div>
+
+<script>
+  function searchUser() {
+    let input, filter, ul, li, a, i, txtValue;
+    input = document.getElementById('searchInput');
+    filter = input.value.toUpperCase();
+    ul = document.getElementById("userList");
+    li = ul.getElementsByTagName('li');
+    for (i = 0; i < li.length; i++) {
+      a = li[i];
+      txtValue = a.textContent || a.innerText;
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        li[i].style.display = "";
+      } else {
+        li[i].style.display = "none";
+      }
+    }
+  }
+  let selectedUserId = null;
+  let selectedUsername = null;
+
+  function selectUser(username, userid) {
+    selectedUserId = userid;
+    selectedUsername = username;
+    alert("Selected User: " + username + " (ID: " + userid + ")");
+  }
+
+function submitPage() {
+  // Check if a user is selected
+  if (selectedUserId && selectedUsername) {
+    const queryString = new URLSearchParams({
+      userid: selectedUserId,
+      username: selectedUsername
+    // Add any other parameters here
+    }).toString();
+  const url = '/recommended_games?' + queryString;
+    // Make the API call to /games
+    // fetch(url, {
+    //  method: 'GET', // or 'GET' depending on your API
+    // headers: {
+    //  'Content-Type': 'application/json'
+      // Add any other headers as required
+    //}
+  //})
+    //.then(response => {
+      // Handle the response as needed
+      // For example, you can redirect to another page
+      window.location.href = url;
+    //})
+
+  } else {
+    alert("Please select a user before proceeding.");
+  }
+}
+
+</script>
+
+</body>
+</html>

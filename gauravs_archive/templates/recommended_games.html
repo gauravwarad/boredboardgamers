@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Data Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>The recommended games are </h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Row Number</th>
+                    <th>User</th>
+                    <th>Rating</th>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>User ID</th>
+                    <th>Prediction</th>
+                </tr>
+            </thead>
+            <tbody id="jsonTable">
+                <!-- Table rows will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var jsonData = {{ json_data | safe }};
+            var tableBody = document.getElementById("jsonTable");
+
+            jsonData.forEach(function(item) {
+                var data = JSON.parse(item);
+                var row = document.createElement("tr");
+
+                Object.keys(data).forEach(function(key) {
+                    var cell = document.createElement("td");
+                    cell.textContent = data[key];
+                    row.appendChild(cell);
+                });
+
+                tableBody.appendChild(row);
+            });
+        });
+    </script>
+</body>
+</html>
