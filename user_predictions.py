@@ -12,6 +12,7 @@ SHOW = False
 REVIEWS_FILE = "hdfs_datastore/csv_bgReviews"
 GAMES_FILE = "hdfs_datastore/csv_games"
 MODEL_PATH = "hdfs_datastore/model_bgPredictions"
+USERS_FILE = "hdfs_datastore/csv_users/*.csv"
 
 GAMES_SCHEMA = StructType([
             StructField("gameId", IntegerType(), False),
@@ -27,6 +28,27 @@ REVIEWS_SCHEMA = StructType([
             StructField("gameName", StringType(), True),
             StructField("userId", IntegerType(), True),
         ])
+
+
+def get_users(per_page, page):
+    print("creating spark session ... ")
+    spark = SparkSession.builder \
+        .master('local[*]') \
+        .config("spark.driver.memory", "3g") \
+        .appName("CSV Read and Write") \
+        .getOrCreate()
+
+    print("reading users files .. ")
+    df_users = spark.read.csv(USERS_FILE, header=True)
+    # df_users = df_users.limit(per_page)
+    skip = per_page * (page - 1)
+
+    df_users = df_users.where(col('userId').between(skip, skip + per_page))
+
+    # df_users = df_users.limit(per_page).skip(skip)
+    df_users.show()
+
+    return df_users.toJSON().collect()
 
 
 class UserPredictions:
