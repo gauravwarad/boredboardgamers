@@ -51,6 +51,26 @@ def get_users(per_page, page):
     return df_users.toJSON().collect()
 
 
+def search_users(search_key):
+    print("creating spark session ... ")
+    spark = SparkSession.builder \
+        .master('local[*]') \
+        .config("spark.driver.memory", "3g") \
+        .appName("searching users") \
+        .getOrCreate()
+
+    print("reading users files .. ")
+    df_users = spark.read.csv(USERS_FILE, header=True)
+    # df_users = df_users.limit(per_page)
+
+    # df_users = df_users.where(col('userName').between(skip, skip + per_page))
+    results = df_users.filter(df_users['userName'] == search_key)
+    # df_users = df_users.limit(per_page).skip(skip)
+    results.show()
+
+    return results.toJSON().collect()
+
+
 class UserPredictions:
     def __init__(self):
         self.userId = 66439
