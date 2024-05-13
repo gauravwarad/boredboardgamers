@@ -1,69 +1,102 @@
-
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
 from pyspark.ml.feature import StringIndexer
-import findspark
 
+import findspark
 findspark.init()
 
 INPUT_FILE = "dataset/bgg-19m-reviews.csv"
-OUTPUT_FILE = "hdfs_datastore/csv_bgReviews"
+REVIEWS_FILE = "hdfs_datastore/csv_bgReviews"
 
-# If not, create a SparkSession
-spark = SparkSession.builder \
-    .master('local[*]') \
-    .config("spark.driver.memory", "3g") \
-    .appName("data cleaning") \
-    .getOrCreate()
-
-# Read the CSV file into a DataFrame
-df = spark.read.option("header", "true").csv(INPUT_FILE)
-
-df_count = df.count()
-print(f"_df_count:{df_count}")
-
-# Perform the required transformation
-# df_transformed = df.withColumn("age_plus_10", col("age").cast("int") + 10)
-
-# Select only the required columns for the output
-df = df.filter((col("ID").cast("int").isNotNull())  # game ids should convert to int
-               & ~col("ID").rlike("\\D")  # remove any with decimal points
-               & (col("rating").cast("float").isNotNull())  # ratings should convert to float
-               & (col("rating").cast("float") >= 0)  # ratings should be between 0 and 10
-               & (col("rating").cast("float") <= 10)  # ratings should be between 0 and 10
-               )
-
-df_f1_count = df.count()
-print(f"filtered non-numeric and out of range from [gameId,userId,rating] ({df_count - df_f1_count} rows filtered)")
-
-df = df.select(col("user").alias("userName"), col("ID").alias("gameId"), "rating", col("name").alias("gameName"))
-df.show(20)
-
-stringindexer = (StringIndexer()
-                 .setInputCol("userName")
-                 .setOutputCol("userId"))
-indexedDF = stringindexer.fit(df)
-df = indexedDF.transform(df)
-df = df.withColumn("userId", col("userId").cast("int"))
-df.show(20)
-print(f"Final record count: {df.count()}")
-
-# df_nulls = df.filter(df.gameId.isNull())
-# print(f"null gameId records: {df_nulls.count()}")
-
-# df = df.filter((col("userName") == "Nekura"))
-# df.show(100)
+DEBUG = True
 
 
-# Write the DataFrame to a single CSV file
-#df_single_partition = df.repartition(1)
-df.write \
-    .option("header", "true") \
-    .csv(OUTPUT_FILE)
+def load_csv_into_df(path, schema, spark):
+    """LOAD GAMES"""
+    df = spark.read.csv(path, schema=schema, header=True)
+    return df
 
-_df2 = spark.read.option("header", "true").csv(OUTPUT_FILE)
 
-_df2_count = _df2.count()
-print(f"_df2_count:{_df2_count}")
+def start_spark_session():
+    """START SPARK SESSION"""
+    spark = SparkSession.builder \
+        .master('local[*]') \
+        .config("spark.driver.memory", "3g") \
+        .appName("single_user_predictor") \
+        .getOrCreate()
+    return spark
 
-spark.stop()
+
+def main():
+    """MAIN"""
+    # start spark session
+    print("starting spark session...")
+    spark = start_spark_session()
+
+    try:
+        # load full reviews file
+        print("loading raw reviews file...")
+
+        # Read the CSV file into a DataFrame
+        print("loading input file...")
+        df = spark.read.option("header", "true").csv(INPUT_FILE)
+
+        # count rows
+        df_count = df.count()
+        print(f"Input file rows count:{df_count}")
+
+        # CLEAN input data,
+        print("cleaning input data...")
+        df = df.filter((col("ID").cast("int").isNotNull())  # game ids should convert to int
+                        & ~col("ID").rlike("\\D")  # remove any with decimal points
+                        & (col("rating").cast("float").isNotNull())  # ratings should convert to float
+                        & (col("rating").cast("float") >= 0)  # ratings should be between 0 and 10
+                        & (col("rating").cast("float") <= 10)  # ratings should be between 0 and 10
+                       )
+
+        # get new row count
+        df_f1_count = df.count()
+        print(f"filtered non-numeric and out of range from [gameId,userId,rating] ({df_count - df_f1_count} rows filtered)")
+
+        # remove unused columns to improve I/O efficiency
+        df = df.select(col("user").alias("userName"), col("ID").alias("gameId"), "rating", col("name").alias("gameName") )
+
+        if DEBUG:
+            df.show(20)
+
+        # ADD UserId to our data set using StringIndexer class
+        print("creating an userId index (needed for ALS)")
+        stringindexer = (StringIndexer()
+                            .setInputCol("userName")
+                            .setOutputCol("userId"))
+        indexedDF = stringindexer.fit(df)
+        df = indexedDF.transform(df)
+        df = df.withColumn("userId", col("userId").cast("int"))
+
+        if DEBUG:
+            df.show(20)
+
+        print(f"Final record count: {df.count()}")
+
+        # write to Pyspark file system
+        df.write \
+             .option("header", "true") \
+             .csv(REVIEWS_FILE)
+
+        # if DEBUG true, read back in the file to check for success
+        if DEBUG:
+            _df2 = spark.read.option("header", "true").csv(REVIEWS_FILE)
+
+            _df2_count = _df2.count()
+            print(f"_df2_count:{_df2_count}")
+
+    finally:
+        #either way stop the spark session
+        print("stop spark")
+        spark.stop()
+
+
+# Code to prevent accidental execution
+if __name__ == "__main__":
+    main()
+

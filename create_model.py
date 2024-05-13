@@ -1,3 +1,4 @@
+from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml.recommendation import ALS
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
@@ -35,11 +36,11 @@ print(f"loaded file: {INPUT_FILE} ({df_count} rows)")
 print("sample:")
 df.show(20)
 
-# Create Model using ALS (alternating least squares method)
+#Create Model using ALS (alternating least squares method)
 als = ALS(userCol="userId", itemCol="gameId", ratingCol="rating", coldStartStrategy="drop")
 model = als.fit(df)
 
-# Save Model in hdfs for reuse
+#Save Model in hdfs for reuse
 model.save(MODEL_PATH)
 
 spark.stop()
