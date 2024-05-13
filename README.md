@@ -1,5 +1,5 @@
 
-To run:
+Setup:
     1. Make sure all required libraries are installed
         install pyspark
         install findspark
@@ -12,4 +12,8 @@ To run:
     6. (optional) run crossvalidation_evaluator.py to determine best Rank/RegParam values
     7. run create_model.py (preferably using the values from the crossvalidation_evaluator)
     8. (optional) run user_predictions.py directly (test code at bottom of file lets you run predictions for single user by username)
+
+UI deployment:
+
+UI Usage:
     
