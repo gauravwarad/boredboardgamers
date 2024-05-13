@@ -11,4 +11,5 @@ To run:
     5. (optional) run regression_evaluator.py to view RMSE
     6. (optional) run crossvalidation_evaluator.py to determine best Rank/RegParam values
     7. run create_model.py (preferably using the values from the crossvalidation_evaluator)
+    8. (optional) run user_predictions.py directly (test code at bottom of file lets you run predictions for single user by username)
     
